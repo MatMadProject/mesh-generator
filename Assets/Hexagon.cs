@@ -10,6 +10,7 @@ public class Hexagon
     private Vector3 centerPoint = new Vector3(0f,0f,0f);
     public static int VerticesAmmmount = 7;
     public static int TrianglesAmmount = 18;
+    public Vector3 CenterPoint { get; private set; }
 
     public Hexagon(Vector3 centerPoint, float sideLength)
     {
@@ -63,6 +64,8 @@ public class Hexagon
             1,5,6,
             1,6,2
         };
+
+        CenterPoint = Vertices[1];
     }
 
     public void UpdateTraingles(int gridIndex)
