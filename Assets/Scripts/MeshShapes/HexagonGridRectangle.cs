@@ -54,8 +54,8 @@ namespace Assets.Scripts.MeshShapes
 
         private void OnDrawGizmos()
         {
-            DrawHorizontalDistanceBeetweenTiles();
-            DrawVerticalDistanceBeetweenTiles();
+            //DrawHorizontalDistanceBeetweenTiles();
+            //DrawVerticalDistanceBeetweenTiles();
         }
 
         private void DrawHorizontalDistanceBeetweenTiles()
@@ -103,8 +103,12 @@ namespace Assets.Scripts.MeshShapes
         }
         private void ClearMeshTrainglesAndVertices()
         {
-            Array.Clear(vertices, 0, vertices.Length);
-            Array.Clear(triangles, 0, triangles.Length);
+            //Array.Clear(vertices, 0, vertices.Length);
+            //Array.Clear(triangles, 0, triangles.Length);
+            //addIndexInArray = 0;
+            vertices = new Vector3[] { };
+            triangles = new int[] { };
+            addIndexInArray = 0;
         }
         private void CreateRectangleMesh()
         {

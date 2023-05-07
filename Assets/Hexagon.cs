@@ -6,17 +6,17 @@ public class Hexagon
     public Vector3[] Vertices { get; private set; }
     public int[] Triangles { get; private set; }
     private float sideLength = 1f;
-    private float height = 0f;
-    private Vector3 centerPoint = new Vector3(0f,0f,0f);
+    public float Height { get; private set; } = 0f;
+    public Vector3 StartPoint { get; private set; } = new Vector3(0f,0f,0f);
     public static int VerticesAmmmount = 7;
     public static int TrianglesAmmount = 18;
     public Vector3 CenterPoint { get; private set; }
 
     public Hexagon(Vector3 centerPoint, float sideLength)
     {
-        this.centerPoint = centerPoint;
+        this.StartPoint = centerPoint;
         this.sideLength = sideLength;
-        height = CalculateHeight(sideLength);
+        Height = CalculateHeight(sideLength);
         CreateShape();
     }
 
@@ -26,33 +26,33 @@ public class Hexagon
         {
             //bottom side
             new Vector3(
-                centerPoint.x - (sideLength/2f),
-                centerPoint.y,
-                centerPoint.z - (height/3f)),
+                StartPoint.x - (sideLength/2f),
+                StartPoint.y,
+                StartPoint.z - (Height/3f)),
             new Vector3(
-                centerPoint.x,
-                centerPoint.y,
-                centerPoint.z + ((2/3f)*height)),
+                StartPoint.x,
+                StartPoint.y,
+                StartPoint.z + ((2/3f)*Height)),
             new Vector3(
-                centerPoint.x + (sideLength/2f),
-                centerPoint.y,
-                centerPoint.z - (height/3f)),
+                StartPoint.x + (sideLength/2f),
+                StartPoint.y,
+                StartPoint.z - (Height/3f)),
             new Vector3(
-                centerPoint.x - sideLength,
-                centerPoint.y,
-                centerPoint.z + ((2/3f)*height)),
+                StartPoint.x - sideLength,
+                StartPoint.y,
+                StartPoint.z + ((2/3f)*Height)),
             new Vector3(
-                centerPoint.x - (sideLength/2f),
-                centerPoint.y,
-                centerPoint.z + height + ((2/3f)*height)),
+                StartPoint.x - (sideLength/2f),
+                StartPoint.y,
+                StartPoint.z + Height + ((2/3f)*Height)),
             new Vector3(
-                centerPoint.x + (sideLength/2f),
-                centerPoint.y,
-                centerPoint.z + height + ((2/3f)*height)),
+                StartPoint.x + (sideLength/2f),
+                StartPoint.y,
+                StartPoint.z + Height + ((2/3f)*Height)),
             new Vector3(
-                centerPoint.x + sideLength,
-                centerPoint.y,
-                centerPoint.z + ((2/3f)*height)),
+                StartPoint.x + sideLength,
+                StartPoint.y,
+                StartPoint.z + ((2/3f)*Height)),
         };
 
         Triangles = new int[]
@@ -85,4 +85,19 @@ public class Hexagon
     {
         return (Mathf.Sqrt(3f) * sideLength) / 2f;
     }
+
+    public override bool Equals(object obj)
+    {
+        //Check for null and compare run-time types.
+        if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+        {
+            return false;
+        }
+        else
+        {
+            Hexagon h = (Hexagon)obj;
+            return CenterPoint == h.CenterPoint;
+        }
+    }
+
 }
