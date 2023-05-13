@@ -1,6 +1,5 @@
 ﻿
 using UnityEngine;
-using Assets.Scripts.MeshShapes;
 
 [RequireComponent(typeof(MeshFilter))]
 public class EquilateralTriangle : MonoBehaviour

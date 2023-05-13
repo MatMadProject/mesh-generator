@@ -99,5 +99,4 @@ public class Hexagon
             return CenterPoint == h.CenterPoint;
         }
     }
-
 }

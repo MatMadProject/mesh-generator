@@ -89,7 +89,7 @@ public class HexagonGridCircle : MonoBehaviour
         {
             List<Hexagon> tmpCreatedHexagons = new(createdHexagons.ToArray());
             foreach (Hexagon hexagon in tmpCreatedHexagons)
-                CreateOuterHexagons(hexagon);
+                CreateOuterHexagonsWithMargin(hexagon);
         }
     }
 
@@ -162,37 +162,37 @@ public class HexagonGridCircle : MonoBehaviour
                     startPointOfMesh = new Vector3(
                       centerHexagon.CenterPoint.x,
                       centerHexagon.CenterPoint.y,
-                      centerHexagon.CenterPoint.z + (4 / 3f * centerHexagon.Height));
+                      centerHexagon.CenterPoint.z + (4 / 3f * centerHexagon.Height) + tileMargin);
                     break;
                 case 2:
                     startPointOfMesh = new Vector3(
-                      centerHexagon.CenterPoint.x + (1.5f * sideSize),
+                      centerHexagon.CenterPoint.x + (1.5f * sideSize) + Hexagon.CalculateHeight(tileMargin),
                       centerHexagon.CenterPoint.y,
-                      centerHexagon.CenterPoint.z + 1 / 3f * centerHexagon.Height);
+                      centerHexagon.CenterPoint.z + 1 / 3f * centerHexagon.Height + tileMargin/2);
                     break;
                 case 3:
                     startPointOfMesh = new Vector3(
-                      centerHexagon.CenterPoint.x + (1.5f * sideSize),
+                      centerHexagon.CenterPoint.x + (1.5f * sideSize) + Hexagon.CalculateHeight(tileMargin),
                       centerHexagon.CenterPoint.y,
-                      centerHexagon.CenterPoint.z - 5 / 3f * centerHexagon.Height);
+                      centerHexagon.CenterPoint.z - 5 / 3f * centerHexagon.Height - tileMargin/2);
                     break;
                 case 4:
                     startPointOfMesh = new Vector3(
                       centerHexagon.CenterPoint.x,
                       centerHexagon.CenterPoint.y,
-                      centerHexagon.CenterPoint.z - (8 / 3f * centerHexagon.Height));
+                      centerHexagon.CenterPoint.z - (8 / 3f * centerHexagon.Height) - tileMargin);
                     break;
                 case 5:
                     startPointOfMesh = new Vector3(
-                      centerHexagon.CenterPoint.x - (1.5f * sideSize),
+                      centerHexagon.CenterPoint.x - (1.5f * sideSize) - Hexagon.CalculateHeight(tileMargin),
                       centerHexagon.CenterPoint.y,
-                      centerHexagon.CenterPoint.z - 5 / 3f * centerHexagon.Height);
+                      centerHexagon.CenterPoint.z - 5 / 3f * centerHexagon.Height - tileMargin/2);
                     break;
                 case 6:
                     startPointOfMesh = new Vector3(
-                      centerHexagon.CenterPoint.x - (1.5f * sideSize),
+                      centerHexagon.CenterPoint.x - (1.5f * sideSize) - Hexagon.CalculateHeight(tileMargin),
                       centerHexagon.CenterPoint.y,
-                      centerHexagon.CenterPoint.z + 1 / 3f * centerHexagon.Height);
+                      centerHexagon.CenterPoint.z + 1 / 3f * centerHexagon.Height + tileMargin/2);
                     break;
             }
             AddSingleHexagon(startPointOfMesh);
