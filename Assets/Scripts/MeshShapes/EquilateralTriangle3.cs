@@ -27,6 +27,8 @@ public class EquilateralTriangle3 : MonoBehaviour
     [SerializeField]
     private Vector3 startPoint;
     [SerializeField]
+    private Vector3 leftDowVertices;
+    [SerializeField]
     private Vector3 axisX;
     [SerializeField]
     private Vector3 axisY;
@@ -90,7 +92,8 @@ public class EquilateralTriangle3 : MonoBehaviour
         horizontalVector = (axisX * sideSize / (rowsOfVertices - 1));
         verticalVector = SelectVerticalVector(OctahedronFace);
 
-        startPoint = triangleFace.leftDownVertices;
+        startPoint = triangleFace.leftDownVertices * sideSize;
+        leftDowVertices = triangleFace.leftDownVertices * sideSize;
         for (int vertical = rows; vertical > 0; vertical--)
         {
             for (int horizontal = 0; horizontal < vertical; horizontal++)
@@ -163,51 +166,51 @@ public class EquilateralTriangle3 : MonoBehaviour
             case Octahedron.Face.ForwardUp:
                 return 
                     verticalVector = new Vector3(
-                        axisY.z / 2f / (rowsOfVertices - 1),
+                        (axisY.z / 2f / (rowsOfVertices - 1) * sideSize),
                         CalculateHeight(sideSize) / (rowsOfVertices - 1),
-                        axisY.z / 2f / (rowsOfVertices - 1));
+                        (axisY.z / 2f / (rowsOfVertices - 1) * sideSize));
             case Octahedron.Face.BackUp:
                 return 
                     verticalVector = new Vector3(
-                        axisY.z / 2f / (rowsOfVertices - 1),
+                        (axisY.z / 2f / (rowsOfVertices - 1) * sideSize),
                         CalculateHeight(sideSize) / (rowsOfVertices - 1),
-                        axisY.z / 2f / (rowsOfVertices - 1));
+                        (axisY.z / 2f / (rowsOfVertices - 1))* sideSize);
             case Octahedron.Face.LeftUp:
                 return
                     verticalVector = new Vector3(
-                        axisY.x / 2f / (rowsOfVertices - 1),
+                        (axisY.x / 2f / (rowsOfVertices - 1) * sideSize),
                         CalculateHeight(sideSize) / (rowsOfVertices - 1),
-                        axisY.x / 2f / (rowsOfVertices - 1) * -1f);
+                        (axisY.x / 2f / (rowsOfVertices - 1) * -1f) * sideSize);
             case Octahedron.Face.RightUp:
                 return
                     verticalVector = new Vector3(
-                        axisY.x / 2f / (rowsOfVertices - 1),
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize,
                         CalculateHeight(sideSize) / (rowsOfVertices - 1),
-                        axisY.x / 2f / (rowsOfVertices - 1) * -1f);
+                        (axisY.x / 2f / (rowsOfVertices - 1) * -1f) * sideSize);
             case Octahedron.Face.ForwardDown:
                 return
                    verticalVector = new Vector3(
-                       axisY.z / 2f / (rowsOfVertices - 1) * -1f,
+                       (axisY.z / 2f / (rowsOfVertices - 1) * -1f) * sideSize,
                        CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
-                       axisY.z / 2f / (rowsOfVertices - 1));
+                       (axisY.z / 2f / (rowsOfVertices - 1)) * sideSize);
             case Octahedron.Face.BackDown:
                 return
                 verticalVector = new Vector3(
-                       axisY.z / 2f / (rowsOfVertices - 1) * -1f,
+                       (axisY.z / 2f / (rowsOfVertices - 1) * -1f) * sideSize,
                        CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
-                       axisY.z / 2f / (rowsOfVertices - 1));
+                       (axisY.z / 2f / (rowsOfVertices - 1)) * sideSize);
             case Octahedron.Face.LeftDown:
                 return
                     verticalVector = new Vector3(
-                        axisY.x / 2f / (rowsOfVertices - 1),
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize,
                         CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
-                        axisY.x / 2f / (rowsOfVertices - 1));
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize);
             case Octahedron.Face.RightDown:
                 return
                     verticalVector = new Vector3(
-                        axisY.x / 2f / (rowsOfVertices - 1),
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize,
                         CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
-                        axisY.x / 2f / (rowsOfVertices - 1));
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize);
         }
         return Vector3.zero;
     }

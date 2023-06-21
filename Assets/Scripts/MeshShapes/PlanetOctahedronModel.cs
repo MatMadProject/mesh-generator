@@ -13,6 +13,8 @@ public class PlanetOctahedronModel : MonoBehaviour
     private float sideSize = 1f;
     [SerializeField]
     private bool Sphere = false;
+    [SerializeField]
+    private bool DrawTriangleFaceCenterPoint = false;
 
     private void OnValidate()
     {
@@ -56,9 +58,22 @@ public class PlanetOctahedronModel : MonoBehaviour
                 faces[i], 
                 sideSize);
             planetOctahedronModelFaces[i].Sphere = Sphere;
+            planetOctahedronModelFaces[i].DrawTriangleFaceCenterPoint = DrawTriangleFaceCenterPoint;
         }
     }
 
+    private void OnDrawGizmos()
+    {
+        if (DrawTriangleFaceCenterPoint)
+        {
+            foreach (PlanetOctahedronModelFace face in planetOctahedronModelFaces)
+            {
+                if (face != null)
+                    face.DrawCenterOfGavityOfSingleTriangleFace();
+            }
+        }
+
+    }
     void GenerateMesh()
     {
         foreach (PlanetOctahedronModelFace face in planetOctahedronModelFaces)

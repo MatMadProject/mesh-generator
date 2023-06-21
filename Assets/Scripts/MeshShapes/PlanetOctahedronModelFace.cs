@@ -19,19 +19,37 @@ public class PlanetOctahedronModelFace
     private PlanetOctahedronModel.TriangleFace triangleFace;
     private PlanetOctahedronModel.Face face;
     public bool Sphere = false;
+    public bool DrawTriangleFaceCenterPoint = false;
 
+    
     public PlanetOctahedronModelFace(Mesh mesh, int resolution, PlanetOctahedronModel.Face face, float sideSize)
     {
         this.mesh = mesh;
         this.resolution = resolution;
         this.face = face;
-        this.triangleFace = PlanetOctahedronModel.TriangleFace.SelectFace(face);
+        triangleFace = PlanetOctahedronModel.TriangleFace.SelectFace(face);
         this.sideSize = sideSize;
         localUp = triangleFace.direction;
         axisY = triangleFace.axisY;
         axisX = Vector3.Cross(localUp, axisY) / 2f;
     }
 
+    public void DrawCenterOfGavityOfSingleTriangleFace()
+    {
+        if (DrawTriangleFaceCenterPoint)
+        {
+            for(int i = 0; i < triangles.Length; i += 3)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(
+                    CenterOfGravityOfSingleTriangleFace(
+                        vertices[triangles[i]],
+                        vertices[triangles[i + 2]],
+                        vertices[triangles[i + 1]])
+                    , 0.01f / resolution);
+            }
+        }
+    }
     public void CreateMesh()
     {
         rowsOfVertices = Mathf.CeilToInt(Mathf.Pow(2, resolution - 1)) + 1;
@@ -53,13 +71,13 @@ public class PlanetOctahedronModelFace
         horizontalVector = (axisX * sideSize / (rowsOfVertices - 1));
         verticalVector = SelectVerticalVector(face);
 
-        startPoint = triangleFace.leftDownVertices;
+        startPoint = triangleFace.leftDownVertices * sideSize;
         for (int vertical = rows; vertical > 0; vertical--)
         {
             for (int horizontal = 0; horizontal < vertical; horizontal++)
             {
                 Vector3 verticesPoint = startPoint + horizontalVector * horizontal;
-                Vector3 pointOnSphere = verticesPoint.normalized;
+                Vector3 pointOnSphere = verticesPoint.normalized * sideSize;
 
                 if (Sphere)
                     vertices[index] = pointOnSphere;
@@ -114,52 +132,52 @@ public class PlanetOctahedronModelFace
         {
             case PlanetOctahedronModel.Face.ForwardUp:
                 return
-                    verticalVector = new Vector3(
-                        axisY.z / 2f / (rowsOfVertices - 1),
+                   new Vector3(
+                        (axisY.z / 2f / (rowsOfVertices - 1) * sideSize),
                         CalculateHeight(sideSize) / (rowsOfVertices - 1),
-                        axisY.z / 2f / (rowsOfVertices - 1));
+                        (axisY.z / 2f / (rowsOfVertices - 1) * sideSize));
             case PlanetOctahedronModel.Face.BackUp:
                 return
-                    verticalVector = new Vector3(
-                        axisY.z / 2f / (rowsOfVertices - 1),
+                    new Vector3(
+                        (axisY.z / 2f / (rowsOfVertices - 1) * sideSize),
                         CalculateHeight(sideSize) / (rowsOfVertices - 1),
-                        axisY.z / 2f / (rowsOfVertices - 1));
+                        (axisY.z / 2f / (rowsOfVertices - 1)) * sideSize);
             case PlanetOctahedronModel.Face.LeftUp:
                 return
-                    verticalVector = new Vector3(
-                        axisY.x / 2f / (rowsOfVertices - 1),
+                    new Vector3(
+                        (axisY.x / 2f / (rowsOfVertices - 1) * sideSize),
                         CalculateHeight(sideSize) / (rowsOfVertices - 1),
-                        axisY.x / 2f / (rowsOfVertices - 1) * -1f);
+                        (axisY.x / 2f / (rowsOfVertices - 1) * -1f) * sideSize);
             case PlanetOctahedronModel.Face.RightUp:
                 return
-                    verticalVector = new Vector3(
-                        axisY.x / 2f / (rowsOfVertices - 1),
+                    new Vector3(
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize,
                         CalculateHeight(sideSize) / (rowsOfVertices - 1),
-                        axisY.x / 2f / (rowsOfVertices - 1) * -1f);
+                        (axisY.x / 2f / (rowsOfVertices - 1) * -1f) * sideSize);
             case PlanetOctahedronModel.Face.ForwardDown:
                 return
-                   verticalVector = new Vector3(
-                       axisY.z / 2f / (rowsOfVertices - 1) * -1f,
+                   new Vector3(
+                       (axisY.z / 2f / (rowsOfVertices - 1) * -1f) * sideSize,
                        CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
-                       axisY.z / 2f / (rowsOfVertices - 1));
+                       (axisY.z / 2f / (rowsOfVertices - 1)) * sideSize);
             case PlanetOctahedronModel.Face.BackDown:
                 return
-                verticalVector = new Vector3(
-                       axisY.z / 2f / (rowsOfVertices - 1) * -1f,
+                new Vector3(
+                       (axisY.z / 2f / (rowsOfVertices - 1) * -1f) * sideSize,
                        CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
-                       axisY.z / 2f / (rowsOfVertices - 1));
+                       (axisY.z / 2f / (rowsOfVertices - 1)) * sideSize);
             case PlanetOctahedronModel.Face.LeftDown:
                 return
-                    verticalVector = new Vector3(
-                        axisY.x / 2f / (rowsOfVertices - 1),
+                    new Vector3(
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize,
                         CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
-                        axisY.x / 2f / (rowsOfVertices - 1));
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize);
             case PlanetOctahedronModel.Face.RightDown:
                 return
-                    verticalVector = new Vector3(
-                        axisY.x / 2f / (rowsOfVertices - 1),
+                    new Vector3(
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize,
                         CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
-                        axisY.x / 2f / (rowsOfVertices - 1));
+                        (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize);
         }
         return Vector3.zero;
     }
@@ -172,5 +190,11 @@ public class PlanetOctahedronModelFace
     private int SumOfConsecutiveNaturalNumbers(int lastNumber)
     {
         return lastNumber * (lastNumber + 1) / 2;
+    }
+    
+    private Vector3 CenterOfGravityOfSingleTriangleFace(Vector3 leftDownVertice, Vector3 rightDownVertice, Vector3 upVertice)
+    {
+        Vector3 centerOfBottom = Vector3.Lerp(leftDownVertice, rightDownVertice, 0.5f);
+        return Vector3.Lerp(centerOfBottom, upVertice, 0.3333f);
     }
 }
