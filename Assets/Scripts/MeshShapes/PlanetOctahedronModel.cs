@@ -45,7 +45,7 @@ public class PlanetOctahedronModel : MonoBehaviour
             if (meshFilters[i] == null)
             {
                 GameObject meshObj = new GameObject($"mesh_{i}_{faces[i]}");
-                meshObj.transform.parent = transform;
+                //meshObj.transform.parent = transform;
 
                 meshObj.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("Standard"));
                 meshFilters[i] = meshObj.AddComponent<MeshFilter>();

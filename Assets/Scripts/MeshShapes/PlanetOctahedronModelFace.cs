@@ -95,7 +95,8 @@ public class PlanetOctahedronModelFace
 
         for (int vertical = 0; vertical < rowsOfVertices - 1; vertical++)
         {
-            for (int horizontal = 0; horizontal < (rowsOfVertices - vertical - 1); horizontal++)
+            int trianglesInRow = TrianglesInRow(vertical);
+            for (int horizontal = 0; horizontal < trianglesInRow; horizontal++)
             {
                 if (horizontal == 0)
                 {
@@ -117,6 +118,10 @@ public class PlanetOctahedronModelFace
             }
             offset += rowsOfVertices - vertical;
         }
+    }
+    private int TrianglesInRow(int verticalRowIndex)
+    {
+        return rowsOfVertices - verticalRowIndex - 1;
     }
     private void UpdateMesh(Mesh mesh)
     {
