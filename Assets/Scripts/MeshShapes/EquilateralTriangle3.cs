@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 [RequireComponent(typeof(MeshFilter))]
@@ -140,6 +139,9 @@ public class EquilateralTriangle3 : MonoBehaviour
 
     private void UpdateHexagonMesh()
     {
+        GameObject hexagonTiles = new GameObject($"hexagonTiles");
+        hexagonTiles.transform.parent = transform;
+
         if (hexagonsMeshFilters == null || hexagonsMeshFilters.Length == 0 || hexagonsMeshFilters.Length != hexagons.Length)
         {
             hexagonsMeshFilters = new MeshFilter[hexagons.Length];
@@ -150,13 +152,13 @@ public class EquilateralTriangle3 : MonoBehaviour
             if (hexagonsMeshFilters[i] == null)
             {
                 GameObject tile = new GameObject($"HexagonTile[{i}]");
-                tile.transform.parent = transform;
+                tile.transform.parent = hexagonTiles.transform;
 
                 tile.AddComponent<MeshRenderer>().sharedMaterial = hexagonTileMaterial;
                 hexagonsMeshFilters[i] = tile.AddComponent<MeshFilter>();
                 hexagonsMeshFilters[i].sharedMesh = new Mesh();
             }
-            Debug.Log($"hexagons[{i}] vertices: {hexagons[i].vertices}");
+            //Debug.Log($"hexagons[{i}] vertices: {hexagons[i].vertices}");
             hexagons[i].mesh = hexagonsMeshFilters[i].sharedMesh;
             hexagons[i].UpdateMesh();
         }
