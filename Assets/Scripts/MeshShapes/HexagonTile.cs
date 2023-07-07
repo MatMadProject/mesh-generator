@@ -25,6 +25,7 @@ public class HexagonTile
         vertices[6] = centerPoint;
         sideLength = Vector3.Distance(vertices[0], vertices[1]);
         height = (Mathf.Sqrt(3f) * sideLength) / 2f;
+        mesh = new Mesh();
     }
 
     public HexagonTile(Vector3[] vertices, Mesh mesh)

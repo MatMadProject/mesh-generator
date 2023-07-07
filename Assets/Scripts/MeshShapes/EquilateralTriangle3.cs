@@ -198,8 +198,8 @@ public class EquilateralTriangle3 : MonoBehaviour
         vertices[5] = centerPointsOfTriangels[triangelIndex + triangelsInRow + 1];
 
 
-        Debug.Log($"Triangels ({triangelIndex},{triangelIndex + 1},{triangelIndex + 2}," +
-            $"{triangelIndex + triangelsInRow - 1},{triangelIndex + triangelsInRow},{triangelIndex + triangelsInRow + 1})");
+        //Debug.Log($"Triangels ({triangelIndex},{triangelIndex + 1},{triangelIndex + 2}," +
+            //$"{triangelIndex + triangelsInRow - 1},{triangelIndex + triangelsInRow},{triangelIndex + triangelsInRow + 1})");
         return new Hexagon(vertices);
     }
 

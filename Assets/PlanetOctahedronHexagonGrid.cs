@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 
 public class PlanetOctahedronHexagonGrid : MonoBehaviour
@@ -8,13 +7,19 @@ public class PlanetOctahedronHexagonGrid : MonoBehaviour
     public int resolution = 1;
     [SerializeField, HideInInspector]
     private MeshFilter[] meshFilters;
+    private GameObject[] gridFaces;
     private PlanetOctahedronModelFace[] planetOctahedronModelFaces;
     [SerializeField]
     private float sideSize = 1f;
     [SerializeField]
-    private bool Sphere = false;
+    private int tile = 0;
     [SerializeField]
-    private bool DrawTriangleFaceCenterPoint = false;
+    private Material material;
+    //[SerializeField]
+    //private bool Sphere = false;
+    //[Header("Gizmo Data")]
+    //[SerializeField]
+    //private bool DrawTriangleFaceCenterPoint = false;
 
     private void OnValidate()
     {
@@ -25,15 +30,8 @@ public class PlanetOctahedronHexagonGrid : MonoBehaviour
 
     private void Start()
     {
-        Initialize();
+        Initialize3();
         GenerateHexagonGridMesh();
-    }
-
-    private void Update()
-    {
-        //transform.RotateAround(Vector3.up, 0.001f);
-        transform.Rotate(new Vector3(0, 0.001f, 0));
-
     }
 
     void Initialize()
@@ -59,10 +57,10 @@ public class PlanetOctahedronHexagonGrid : MonoBehaviour
         {
             if (meshFilters[i] == null)
             {
-                GameObject meshObj = new GameObject($"Face_{faces[i]}");
+                GameObject meshObj = new($"Face_{faces[i]}");
                 meshObj.transform.parent = transform;
 
-                meshObj.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("Standard"));
+                meshObj.AddComponent<MeshRenderer>().sharedMaterial = material;//new Material(Shader.Find("Standard"));
                 meshFilters[i] = meshObj.AddComponent<MeshFilter>();
                 meshFilters[i].sharedMesh = new Mesh();
             }
@@ -74,32 +72,95 @@ public class PlanetOctahedronHexagonGrid : MonoBehaviour
                 meshFilters[i].gameObject,
                 resolution,
                 faces[i],
-                sideSize)
-                {
-                    Sphere = Sphere,
-                    DrawTriangleFaceCenterPoint = DrawTriangleFaceCenterPoint
-                };
+                sideSize);
             }
             else
             {
                 planetOctahedronModelFaces[i].SetResolution(resolution);
                 planetOctahedronModelFaces[i].SetSize(resolution);
-            }
-            
+            } 
         }
     }
 
-
-    private void OnDrawGizmos()
+    void Initialize2()
     {
-        if (DrawTriangleFaceCenterPoint)
+        if (gridFaces == null || gridFaces.Length == 0)
         {
-            foreach (PlanetOctahedronModelFace face in planetOctahedronModelFaces)
+            gridFaces = new GameObject[8];
+        }
+        planetOctahedronModelFaces = new PlanetOctahedronModelFace[8];
+
+        PlanetOctahedronModel.Face[] faces = {
+            PlanetOctahedronModel.Face.ForwardUp,
+            PlanetOctahedronModel.Face.BackUp,
+            PlanetOctahedronModel.Face.LeftUp,
+            PlanetOctahedronModel.Face.RightUp,
+            PlanetOctahedronModel.Face.ForwardDown,
+            PlanetOctahedronModel.Face.BackDown,
+            PlanetOctahedronModel.Face.LeftDown,
+            PlanetOctahedronModel.Face.RightDown
+        };
+
+        for (int i = 0; i < 8; i++)
+        {
+            if (gridFaces[i] == null)
             {
-                //if (face != null)
-                    //face.DrawCenterOfGavityOfSingleTriangleFace();
+                GameObject face = new($"Face_{faces[i]}");
+                face.transform.parent = transform;
+                gridFaces[i] = face;
+            }
+
+            if (planetOctahedronModelFaces[i] == null)
+            {
+                planetOctahedronModelFaces[i] = new PlanetOctahedronModelFace(
+                gridFaces[i],
+                resolution,
+                faces[i],
+                sideSize);
             }
         }
+    }
+
+    void Initialize3()
+    {
+        planetOctahedronModelFaces = new PlanetOctahedronModelFace[8];
+
+        PlanetOctahedronModel.Face[] faces = {
+            PlanetOctahedronModel.Face.ForwardUp,
+            PlanetOctahedronModel.Face.BackUp,
+            PlanetOctahedronModel.Face.LeftUp,
+            PlanetOctahedronModel.Face.RightUp,
+            PlanetOctahedronModel.Face.ForwardDown,
+            PlanetOctahedronModel.Face.BackDown,
+            PlanetOctahedronModel.Face.LeftDown,
+            PlanetOctahedronModel.Face.RightDown
+        };
+
+        GameObject grid = new("Grid");
+        grid.transform.parent = transform;
+
+        for (int i = 0; i < 8; i++)
+        {
+            if (planetOctahedronModelFaces[i] == null)
+            {
+                planetOctahedronModelFaces[i] = new PlanetOctahedronModelFace(
+                grid,
+                resolution,
+                faces[i],
+                sideSize);
+            }
+        }
+    }
+    private void OnDrawGizmos()
+    {
+        //if (DrawTriangleFaceCenterPoint)
+        //{
+            //foreach (PlanetOctahedronModelFace face in planetOctahedronModelFaces)
+            //{
+                //if (face != null)
+                    //face.DrawCenterOfGavityOfSingleTriangleFace();
+            //}
+        //}
 
     }
     private void GenerateMesh()
@@ -117,16 +178,75 @@ public class PlanetOctahedronHexagonGrid : MonoBehaviour
         {
             if (face != null)
             {
-                //DeleteAllOldHexagonTiles(face);
-                face.CreateGridMesh();
+                face.material = material;
+                face.CreateGrid();
+                HorizontalBorderRow(face);
+                VerticalBorderRow(face);
+                CalculateTile(face);
+                face.UpdateGridMesh();
             }   
         }
     }
 
     private void DeleteAllOldHexagonTiles(PlanetOctahedronModelFace face)
     {
-        GameObject modelFace = GameObject.Find($"Face_{face.face}");
+        GameObject modelFace = GameObject.Find($"Face_{face.Face}");
         for (int i = modelFace.transform.childCount - 1; i >= 0; i--)
             DestroyImmediate(modelFace.transform.GetChild(i));
+    }
+
+    private PlanetOctahedronModelFace GetPlanetOctahedronModelFace (PlanetOctahedronModel.Face face)
+    {
+        foreach (PlanetOctahedronModelFace model in planetOctahedronModelFaces)
+        {
+            if (model.Face == face)
+                return model;
+        }
+        return null;
+    }
+
+    private void HorizontalBorderRow(PlanetOctahedronModelFace face)
+    {
+        switch (face.Face)
+        {
+            case PlanetOctahedronModel.Face.ForwardDown:
+                face.GenerateDownHorizontalRowHexagonTiles(planetOctahedronModelFaces[0]);
+                break;
+            case PlanetOctahedronModel.Face.BackDown:
+                face.GenerateDownHorizontalRowHexagonTiles(planetOctahedronModelFaces[1]);
+                break;
+            case PlanetOctahedronModel.Face.LeftDown:
+                face.GenerateDownHorizontalRowHexagonTiles(planetOctahedronModelFaces[2]);
+                break;
+            case PlanetOctahedronModel.Face.RightDown:
+                face.GenerateDownHorizontalRowHexagonTiles(planetOctahedronModelFaces[3]);
+                break;
+        }
+    }
+
+    private void VerticalBorderRow(PlanetOctahedronModelFace face)
+    {
+        switch (face.Face)
+        {
+            case PlanetOctahedronModel.Face.ForwardUp:
+                face.GenerateVerticalRowHexagonTiles(planetOctahedronModelFaces[3], planetOctahedronModelFaces[2]);
+                break;
+            case PlanetOctahedronModel.Face.BackUp:
+                face.GenerateVerticalRowHexagonTiles(planetOctahedronModelFaces[2], planetOctahedronModelFaces[3]);
+                break;
+            case PlanetOctahedronModel.Face.ForwardDown:
+                face.GenerateVerticalRowHexagonTiles(planetOctahedronModelFaces[6], planetOctahedronModelFaces[7]);
+                break;
+            case PlanetOctahedronModel.Face.BackDown:
+                face.GenerateVerticalRowHexagonTiles(planetOctahedronModelFaces[7], planetOctahedronModelFaces[6]);
+                break;
+        }
+    }
+
+
+
+    private void CalculateTile(PlanetOctahedronModelFace face)
+    {
+        tile += face.HexagonTileCount();
     }
 }

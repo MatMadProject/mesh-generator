@@ -21,10 +21,11 @@ public class PlanetOctahedronModelFace
     private Vector3 axisX;
     private Vector3 axisY;
     private PlanetOctahedronModel.TriangleFace triangleFace;
-    public PlanetOctahedronModel.Face face { get; private set; }
+    public PlanetOctahedronModel.Face Face { get; private set; }
     private HexagonTile[] hexagonTiles;
     private MeshFilter[] hexagonTilesMeshFilters;
-    public bool Sphere = false;
+    public Material material;
+    public bool Sphere = true;
     public bool DrawTriangleFaceCenterPoint = false;
 
     
@@ -32,7 +33,7 @@ public class PlanetOctahedronModelFace
     {
         this.mesh = mesh;
         this.resolution = resolution;
-        this.face = face;
+        this.Face = face;
         triangleFace = PlanetOctahedronModel.TriangleFace.SelectFace(face);
         this.sideSize = sideSize;
         localUp = triangleFace.direction;
@@ -45,12 +46,26 @@ public class PlanetOctahedronModelFace
         this.mesh = mesh;
         this.parent = parent;
         this.resolution = resolution;
-        this.face = face;
+        this.Face = face;
         triangleFace = PlanetOctahedronModel.TriangleFace.SelectFace(face);
         this.sideSize = sideSize;
         localUp = triangleFace.direction;
         axisY = triangleFace.axisY;
         axisX = Vector3.Cross(localUp, axisY) / 2f;
+        CreateGridData();
+    }
+
+    public PlanetOctahedronModelFace(GameObject parent, int resolution, PlanetOctahedronModel.Face face, float sideSize)
+    {
+        this.parent = parent;
+        this.resolution = resolution;
+        Face = face;
+        triangleFace = PlanetOctahedronModel.TriangleFace.SelectFace(face);
+        this.sideSize = sideSize;
+        localUp = triangleFace.direction;
+        axisY = triangleFace.axisY;
+        axisX = Vector3.Cross(localUp, axisY) / 2f;
+        CreateGridData();
     }
 
     public void DrawCenterOfGavityOfSingleTriangleFace()
@@ -86,7 +101,7 @@ public class PlanetOctahedronModelFace
         UpdateMesh(mesh);
     }
 
-    public void CreateGridMesh()
+    private void CreateGridData()
     {
         rowsOfVertices = Mathf.CeilToInt(Mathf.Pow(2, resolution - 1)) + 1;
         rowsOfTriangels = rowsOfVertices - 1;
@@ -101,13 +116,74 @@ public class PlanetOctahedronModelFace
         CreateTriangles();
         AddCenterPointOfTriangles();
         CalculateHexagonTilesValue();
-
+    }
+    public void CreateGrid()
+    {
         if(hexagonTiles.Length > 0)
-        {
-
             CreateHexagonTiles();
-            UpdateHexagonMesh();
+    }
+
+    public Vector3[] LeftBorderHexagonTilesVertices()
+    {
+        Vector3[] hexagonTileVertices = new Vector3[TriangelsInRow(rowsOfTriangels)];
+        int index = 0;
+        int indexTabCenterPointOfTriangels = 0;
+        int triangelsInRow;
+        for (int i = rowsOfTriangels; i > 0; i--)
+        {
+            triangelsInRow = TriangelsInRow(i);
+            if (i == rowsOfTriangels)
+                hexagonTileVertices[index] = centerPointsOfTriangels[indexTabCenterPointOfTriangels];
+            if(i != 1)
+            {
+                hexagonTileVertices[index + 1] = centerPointsOfTriangels[indexTabCenterPointOfTriangels + 1];
+                hexagonTileVertices[index + 2] = centerPointsOfTriangels[indexTabCenterPointOfTriangels + triangelsInRow];
+            }
+
+            index += 2;
+            indexTabCenterPointOfTriangels += triangelsInRow;
         }
+
+        return hexagonTileVertices;
+    }
+
+    public Vector3[] RightBorderHexagonTilesVertices()
+    {
+        Vector3[] hexagonTileVertices = new Vector3[TriangelsInRow(rowsOfTriangels)];
+        int index = 0;
+
+        int triangelsInNextRow = TriangelsInRow(rowsOfTriangels - 1);
+        int indexTabCenterPointOfTriangels = TriangelsInRow(rowsOfTriangels) - 1;
+        for (int i = rowsOfTriangels; i > 1; i--)
+        { 
+            if (i == rowsOfTriangels)
+                hexagonTileVertices[index] = centerPointsOfTriangels[indexTabCenterPointOfTriangels];
+            if (i != 1)
+            {
+                hexagonTileVertices[index + 1] = centerPointsOfTriangels[indexTabCenterPointOfTriangels - 1];
+                hexagonTileVertices[index + 2] = centerPointsOfTriangels[indexTabCenterPointOfTriangels + triangelsInNextRow];
+            }
+
+
+            index += 2;
+            indexTabCenterPointOfTriangels += triangelsInNextRow;
+            triangelsInNextRow = TriangelsInRow(i - 2);
+        }
+
+        return hexagonTileVertices;
+    }
+
+    public Vector3[] DownBorderHexagonTilesVertices()
+    {
+        Vector3[] hexagonTileVertices = new Vector3[TriangelsInRow(rowsOfTriangels)];
+        
+        int triangelsInRow = TriangelsInRow(rowsOfTriangels);
+        for (int i = 0; i < triangelsInRow ; i++)
+        {
+            hexagonTileVertices[i] = centerPointsOfTriangels[i];
+        }
+
+        return hexagonTileVertices;
     }
 
     private void CreateVertices()
@@ -115,7 +191,7 @@ public class PlanetOctahedronModelFace
         int rows = rowsOfVertices;
         int index = 0;
         horizontalVector = (axisX * sideSize / (rowsOfVertices - 1));
-        verticalVector = SelectVerticalVector(face);
+        verticalVector = SelectVerticalVector(Face);
 
         startPoint = triangleFace.leftDownVertices * sideSize;
         for (int vertical = rows; vertical > 0; vertical--)
@@ -181,13 +257,6 @@ public class PlanetOctahedronModelFace
     public void CalculateHexagonTilesValue()
     {
         hexagonTilesValue = 0;
-        HexagonTile[] old = null;
-        //Debug.Log($"Resolution: {resolution}\t hexagonTiles != null: {hexagonTiles != null}");
-        if (hexagonTiles != null && hexagonTiles.Length > 0)
-        {
-            old = new HexagonTile[hexagonTiles.Length];
-            hexagonTiles.CopyTo(old, 0);
-        }
 
         if (rowsOfVertices >= 5)
         {
@@ -197,12 +266,10 @@ public class PlanetOctahedronModelFace
                 int triangelsInRow = TriangelsInRow(rowOfTriangels);
                 int hexagonsInRow = HexagonsInRow(triangelsInRow);
                 hexagonTilesValue += hexagonsInRow;
-                //Debug.Log($"RowOfTriangles: {rowOfTriangels}\t TrainglesInRow: {triangelsInRow}\t HexagonsInRow: {hexagonsInRow}");
+
             }
         }
         hexagonTiles = new HexagonTile[hexagonTilesValue];
-        if(old != null)
-            old.CopyTo(hexagonTiles, 0);
     }
 
     private int TriangelsInRow(int verticalTriangelsRowIndex)
@@ -230,37 +297,21 @@ public class PlanetOctahedronModelFace
         {
             int triangelsInRow = TriangelsInRow(row);
             maxTriangelsIndexInRow += triangelsInRow;
-            //Debug.Log($"Row:{row}\t TriangelsInRow:{triangelsInRow}\t MinIndex:{minTriangelsIndexInRow}\t MaxIndex:{maxTriangelsIndexInRow}");
             for (int triangelIndex = minTriangelsIndexInRow; triangelIndex < maxTriangelsIndexInRow; triangelIndex += 2)
             {
                 if (triangelIndex + 2 < maxTriangelsIndexInRow)
                 {
-                    hexagonTiles[hexagonIndex] = GenerateHexagonTile(triangelIndex, triangelsInRow, centerPointsOfTriangels);
+                    hexagonTiles[hexagonIndex] = GenerateCenterHexagonTile(triangelIndex, triangelsInRow, centerPointsOfTriangels);
                     hexagonIndex++;
                 }
-
             }
             minTriangelsIndexInRow += triangelsInRow;
         }
     }
 
-    private void UpdateHexagonMesh()
+    public void UpdateGridMesh()
     {
-        MeshFilter[] old = null;
-        
-        if (hexagonTilesMeshFilters != null && hexagonTilesMeshFilters.Length > 0)
-        {
-            old = new MeshFilter[hexagonTilesMeshFilters.Length];
-            hexagonTilesMeshFilters.CopyTo(old, 0);
-        }
-        //Debug.Log($"Resolution: {resolution}\t old: {old != null}");
         hexagonTilesMeshFilters = new MeshFilter[hexagonTiles.Length];
-        if(old != null)
-        {
-            //Debug.Log($"old.Length: {old.Length}\t ");
-            old.CopyTo(hexagonTilesMeshFilters, 0);
-        }
-
         for (int i = 0; i < hexagonTiles.Length; i++)
         {
             if (hexagonTilesMeshFilters[i] == null)
@@ -268,7 +319,7 @@ public class PlanetOctahedronModelFace
                 GameObject tile = new GameObject($"HexagonTile[{i}]");
                 tile.transform.parent = parent.transform;
 
-                tile.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("Standard"));
+                tile.AddComponent<MeshRenderer>().sharedMaterial = material;//new Material(Shader.Find("Standard"));
                 hexagonTilesMeshFilters[i] = tile.AddComponent<MeshFilter>();
                 hexagonTilesMeshFilters[i].sharedMesh = new Mesh();
             }
@@ -278,12 +329,7 @@ public class PlanetOctahedronModelFace
         }
     }
 
-    private void CopyHexagonTileMeshFilters(MeshFilter[] oldTab, MeshFilter[] newTab)
-    {
-        Array.Resize(ref hexagonTilesMeshFilters, hexagonTiles.Length);
-    }
-
-    private HexagonTile GenerateHexagonTile(int triangelIndex, int triangelsInRow, Vector3[] centerPointsOfTriangels)
+    private HexagonTile GenerateCenterHexagonTile(int triangelIndex, int triangelsInRow, Vector3[] centerPointsOfTriangels)
     {
         Vector3[] vertices = new Vector3[7];
 
@@ -294,11 +340,78 @@ public class PlanetOctahedronModelFace
         vertices[4] = centerPointsOfTriangels[triangelIndex + triangelsInRow];
         vertices[5] = centerPointsOfTriangels[triangelIndex + triangelsInRow + 1];
 
-
-        //Debug.Log($"Triangels ({triangelIndex},{triangelIndex + 1},{triangelIndex + 2}," +
-        //    $"{triangelIndex + triangelsInRow - 1},{triangelIndex + triangelsInRow},{triangelIndex + triangelsInRow + 1})");
-        return new HexagonTile(vertices, mesh);
+        //return new HexagonTile(vertices, mesh);
+        return new HexagonTile(vertices);
     }
+
+    public void GenerateDownHorizontalRowHexagonTiles(PlanetOctahedronModelFace upperFace)
+    {
+        Vector3[] downFaceVertices = DownBorderHexagonTilesVertices();
+        Vector3[] upperFaceVertices = upperFace.DownBorderHexagonTilesVertices();
+        Array.Reverse(upperFaceVertices);
+        Vector3[] vertices = new Vector3[7];
+        //Debug.Log($"{Face}:\t downFaceVertices:{downFaceVertices.Length}\t");
+        int tabLength = downFaceVertices.Length;
+        for (int i = 0; i < tabLength - 1; i += 2)
+        {
+            vertices[0] = downFaceVertices[i + 2];
+            vertices[1] = downFaceVertices[i + 1];
+            vertices[2] = downFaceVertices[i];
+            vertices[3] = upperFaceVertices[i + 2];
+            vertices[4] = upperFaceVertices[i + 1];
+            vertices[5] = upperFaceVertices[i];
+
+            Vector3[] copy = new Vector3[7];
+            vertices.CopyTo(copy, 0);
+            AddHexagonTile(new HexagonTile(copy));
+            //AddHexagonTile(new HexagonTile(copy, mesh));
+        }
+    }
+
+    public void GenerateVerticalRowHexagonTiles(PlanetOctahedronModelFace leftFace, PlanetOctahedronModelFace rightFace)
+    {
+        Vector3[] thisLeftBorderTilesVertices = LeftBorderHexagonTilesVertices();
+        Vector3[] thisRightBorderTilesVertices = RightBorderHexagonTilesVertices();
+        Vector3[] leftBorderTilesVertices = leftFace.RightBorderHexagonTilesVertices();
+        Vector3[] rightBorderTilesVertices = rightFace.LeftBorderHexagonTilesVertices();
+
+        Vector3[] vertices = new Vector3[7];
+
+        int tabLength = thisLeftBorderTilesVertices.Length;
+        //Left border
+        for (int i = 0; i < tabLength - 1; i += 2)
+        {
+            vertices[0] = leftBorderTilesVertices[i];
+            vertices[1] = thisLeftBorderTilesVertices[i];
+            vertices[2] = thisLeftBorderTilesVertices[i + 1];
+            vertices[3] = leftBorderTilesVertices[i + 1];
+            vertices[4] = leftBorderTilesVertices[i + 2];
+            vertices[5] = thisLeftBorderTilesVertices[i + 2];
+
+            Vector3[] copy = new Vector3[7];
+            vertices.CopyTo(copy, 0);
+
+            //AddHexagonTile(new HexagonTile(copy, mesh));
+            AddHexagonTile(new HexagonTile(copy));
+        }
+        //Right border
+        for (int i = 0; i < tabLength - 1; i += 2)
+        {
+            vertices[0] = thisRightBorderTilesVertices[i];
+            vertices[1] = rightBorderTilesVertices[i];         
+            vertices[2] = rightBorderTilesVertices[i + 1];
+            vertices[3] = thisRightBorderTilesVertices[i + 1];
+            vertices[4] = thisRightBorderTilesVertices[i + 2];
+            vertices[5] = rightBorderTilesVertices[i + 2];
+
+            Vector3[] copy = new Vector3[7];
+            vertices.CopyTo(copy, 0);
+
+            //AddHexagonTile(new HexagonTile(copy, mesh));
+            AddHexagonTile(new HexagonTile(copy));
+        }
+    }
+
     private int TrianglesInRow(int verticalRowIndex)
     {
         return rowsOfVertices - verticalRowIndex - 1;
@@ -363,8 +476,9 @@ public class PlanetOctahedronModelFace
                         (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize,
                         CalculateHeight(sideSize) / (rowsOfVertices - 1) * -1f,
                         (axisY.x / 2f / (rowsOfVertices - 1)) * sideSize);
-        }
-        return Vector3.zero;
+            default:
+                return Vector3.zero;
+        } 
     }
 
     private float CalculateHeight(float sideLength)
@@ -380,7 +494,7 @@ public class PlanetOctahedronModelFace
     private Vector3 CenterOfGravityOfSingleTriangleFace(Vector3 leftDownVertice, Vector3 rightDownVertice, Vector3 upVertice)
     {
         Vector3 centerOfBottom = Vector3.Lerp(leftDownVertice, rightDownVertice, 0.5f);
-        return Vector3.Lerp(centerOfBottom, upVertice, 0.3333f);
+        return Vector3.Lerp(centerOfBottom, upVertice, 1f/3f);
     }
 
     public void SetSize(float sideSize)
@@ -391,5 +505,16 @@ public class PlanetOctahedronModelFace
     public void SetResolution(int resolution)
     {
         this.resolution = resolution;
+    }
+
+    private void AddHexagonTile(HexagonTile hexagonTile)
+    {
+        Array.Resize(ref hexagonTiles, hexagonTiles.Length + 1);
+        hexagonTiles[hexagonTiles.Length - 1] = hexagonTile;
+    }
+
+    public int HexagonTileCount()
+    {
+        return hexagonTiles.Length;
     }
 }
