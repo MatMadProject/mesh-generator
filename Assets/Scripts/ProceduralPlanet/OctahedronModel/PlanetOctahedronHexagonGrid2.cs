@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using UnityEngine;
 
 
@@ -6,27 +6,46 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
 {
     [Range(3, 7)]
     public int resolution = 1;
-    private PlanetOctahedronModelFace[] planetOctahedronModelFaces;
     private PlanetOctahedronHexagonGridFace2[] planetOctahedronHexagonGridFaces;
     private GameObject grid;
     [SerializeField]
     private float sideSize = 1f;
     [SerializeField]
-    private int tile = 0;
+    private int tilesCount = 0;
     [SerializeField]
     private Material material;
+    public static bool FlatSurface = true;
+    public static float MaximumDepth;
+    public static float MaximumHeight;
     [SerializeField]
-    private bool FlatSurface = true;
+    private bool flatSurface = true;
+    [SerializeField]
+    private float maximumDepth = 0.01f;
+    [SerializeField]
+    private float maximumHeight = 0.05f;
+    private HexagonTile[] hexagonTiles = new HexagonTile[0];
+    [Header("Debug")]
+    [Header("HexagonTileMesh")]
+    [SerializeField]
+    private Vector3[] vertices;
+    [SerializeField]
+    private int[] triangles;
     private void Start()
     {
         Initialize();
-        GenerateHexagonGridMesh();
+        //GenerateHexagonGridMesh();
+        //GenerateHexagonTilesMesh();
+        GenerateHexagonTiles();
+
         grid.transform.position = transform.position;
     }
 
     void Initialize()
     {
         planetOctahedronHexagonGridFaces = new PlanetOctahedronHexagonGridFace2[8];
+        FlatSurface = flatSurface;
+        MaximumDepth = maximumDepth;
+        MaximumHeight = maximumHeight;
 
         OctahedronFace[] faces = {
             OctahedronFace.ForwardUp,
@@ -39,7 +58,7 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
             OctahedronFace.RightDown
         };
 
-        grid = new("Grid");
+        grid = new("GridOld");
         grid.transform.parent = transform;
 
         for (int i = 0; i < 8; i++)
@@ -51,9 +70,7 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
                 material,
                 resolution,
                 faces[i],
-                sideSize);
-
-                planetOctahedronHexagonGridFaces[i].FlatSurface = FlatSurface;
+                sideSize); 
             }
         }
     }
@@ -69,17 +86,59 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
             if (face != null)
             {
                 face.material = material;
-                face.CreateGrid();
-                HorizontalBorderRow(face);
-                VerticalBorderRow(face);
-                CalculateTile(face);
+                CreateHexagonTilesVertices(face);
                 face.UpdateGridMesh();
             }
         }
+        GenerateSquareMesh();
+    }
+    private void GenerateHexagonTilesMesh()
+    {
+        foreach (PlanetOctahedronHexagonGridFace2 face in planetOctahedronHexagonGridFaces)
+            if (face != null)
+            {
+                CreateHexagonTilesVertices(face);
+                AddHexagonTile(face.hexagonTiles);
+            }
+
+        PlanetOctahedronHexagonGridMesh gridMesh = new(hexagonTiles, material);
+        gridMesh.UpdateVerticesAndTriangles();
+
+        GameObject gameObject = gridMesh.GenerateMesh();
+        gameObject.transform.parent = transform;
+        gameObject.transform.position = transform.position;
+
+        vertices = gameObject.GetComponent<MeshFilter>().sharedMesh.vertices;
+        triangles = gameObject.GetComponent<MeshFilter>().sharedMesh.triangles;
 
         GenerateSquareMesh();
     }
 
+    private void GenerateHexagonTiles()
+    {
+        foreach (PlanetOctahedronHexagonGridFace2 face in planetOctahedronHexagonGridFaces)
+            if (face != null)
+            {
+                CreateHexagonTilesVertices(face);
+                AddHexagonTile(face.hexagonTiles);
+            }
+
+        TileGrid gridMesh = new(hexagonTiles, material);
+
+        GameObject gameObject = gridMesh.GenerateGrid();
+        gameObject.transform.parent = transform;
+        gameObject.transform.position = transform.position;
+
+        GenerateSquareMesh();
+    }
+
+    private void CreateHexagonTilesVertices(PlanetOctahedronHexagonGridFace2 face)
+    {
+        face.CreateGrid();
+        HorizontalBorderRow(face);
+        VerticalBorderRow(face);
+        CalculateTile(face);
+    }
     private void HorizontalBorderRow(PlanetOctahedronHexagonGridFace2 face)
     {
         switch (face.Face)
@@ -120,7 +179,7 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
 
     private void CalculateTile(PlanetOctahedronHexagonGridFace2 face)
     {
-        tile += face.HexagonTileCount();
+        tilesCount += face.HexagonTileCount();
     }
 
     private void GenerateSquareMesh()
@@ -129,9 +188,13 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
         squareMesh.transform.parent = transform;
         squareMesh.transform.position = transform.position;
         squareMesh.AddComponent<MeshRenderer>().sharedMaterial = material;
+        MeshCollider meshCollider = squareMesh.AddComponent<MeshCollider>();
+        
+
         MeshFilter meshFilter = squareMesh.AddComponent<MeshFilter>();
         Mesh mesh = meshFilter.sharedMesh = new Mesh();
-
+        meshCollider.sharedMesh = mesh;
+        //meshCollider.convex = true;
         Vector3[] vertices = new Vector3[24];
 
         vertices[0] = planetOctahedronHexagonGridFaces[1].CenterPointOfUpperTriangel();
@@ -184,5 +247,12 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
         mesh.vertices = vertices;
         mesh.triangles = triangels;
         mesh.RecalculateNormals();
+    }
+
+    private void AddHexagonTile(HexagonTile[] hexagonTiles)
+    {
+        int oldTabLength = this.hexagonTiles.Length;
+        Array.Resize(ref this.hexagonTiles, this.hexagonTiles.Length + hexagonTiles.Length);
+        hexagonTiles.CopyTo(this.hexagonTiles, oldTabLength);
     }
 }

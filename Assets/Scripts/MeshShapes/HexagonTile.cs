@@ -5,6 +5,7 @@ public class HexagonTile
 {
     public Mesh mesh;
     public Vector3[] vertices;
+    public Vector3 centerPoint;
     public int[] triangles = new int[]
     {
             0,6,1,
@@ -14,9 +15,11 @@ public class HexagonTile
             4,6,3,
             3,6,0
     };
+
+    public static readonly int VerticesOffset = 7;
+    public static readonly int TriangelsOffset = 18;
     private float sideLength;
     private float height;
-    public Vector3 centerPoint;
 
     public HexagonTile(Vector3[] vertices)
     {
@@ -43,6 +46,14 @@ public class HexagonTile
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
+    }
+
+    public void UpdateVertices()
+    {
+        float random = Random.Range(-1f, 1f);
+        float multiplyValue = 0.1f * random;
+        for (int i = 0; i < VerticesOffset; i++)
+            vertices[i] *= multiplyValue;
     }
 }
 

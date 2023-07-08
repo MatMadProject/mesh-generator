@@ -9,18 +9,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float turnSpeed = 200f;
     private int steerValue;
 
-    //[Header("Camera poroperties")]
-    //[SerializeField] private float sensitiveX;
-    //[SerializeField] private float sensitiveY;
-    //[SerializeField] private float rotationX;
-    //[SerializeField] private float rotationY;
-
     public Transform orientation;
-    // Start is called before the first frame update
     void Start()
     {
-        //Cursor.lockState = CursorLockMode.Locked;
-        //Cursor.visible = false;
+
     }
 
     // Update is called once per frame

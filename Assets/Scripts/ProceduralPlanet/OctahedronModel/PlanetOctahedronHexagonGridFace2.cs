@@ -18,10 +18,8 @@ public class PlanetOctahedronHexagonGridFace2
     private Vector3 localAxisY;
     public OctahedronFace Face { get; private set; }
     private OctahedronFaceData faceData;
-    private HexagonTile[] hexagonTiles;
+    public HexagonTile[] hexagonTiles;
     private MeshFilter[] hexagonTilesMeshFilters;
-    public bool FlatSurface;
-
 
     public PlanetOctahedronHexagonGridFace2(GameObject parent, Material material, int resolution, OctahedronFace face, float sideSize)
     {
@@ -303,11 +301,18 @@ public class PlanetOctahedronHexagonGridFace2
         int index = 0;
         for (int i = 0; i < triangles.Length; i += 3)
         {
-            centerPointsOfTriangels[index] =
-            CenterOfGravityOfSingleTriangleFace(
+            Vector3 point = CenterOfGravityOfSingleTriangleFace(
                 vertices[triangles[i]],
                 vertices[triangles[i + 2]],
                 vertices[triangles[i + 1]]);
+
+            if (!PlanetOctahedronHexagonGrid2.FlatSurface)
+            {
+                point += (localUp * UnityEngine.Random.Range(-PlanetOctahedronHexagonGrid2.MaximumDepth, PlanetOctahedronHexagonGrid2.MaximumHeight));
+            }
+
+            centerPointsOfTriangels[index] = point;
+            
             index++;
         }
     }
