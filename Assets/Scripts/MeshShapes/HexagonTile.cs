@@ -1,11 +1,12 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
+using System;
 
 public class HexagonTile
 {
     public Mesh mesh;
     public Vector3[] vertices;
     public Vector3 centerPoint;
+    public TileType tileType;
     public int[] triangles = new int[]
     {
             0,6,1,
@@ -29,6 +30,7 @@ public class HexagonTile
         sideLength = Vector3.Distance(vertices[0], vertices[1]);
         height = (Mathf.Sqrt(3f) * sideLength) / 2f;
         mesh = new Mesh();
+        tileType = (TileType)Enum.GetValues(typeof(TileType)).GetValue(UnityEngine.Random.Range(0, Enum.GetValues(typeof(TileType)).Length));
     }
 
     public HexagonTile(Vector3[] vertices, Mesh mesh)
@@ -50,7 +52,7 @@ public class HexagonTile
 
     public void UpdateVertices()
     {
-        float random = Random.Range(-1f, 1f);
+        float random = UnityEngine.Random.Range(-1f, 1f);
         float multiplyValue = 0.1f * random;
         for (int i = 0; i < VerticesOffset; i++)
             vertices[i] *= multiplyValue;

@@ -11,6 +11,9 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
     [SerializeField]
     private float sideSize = 1f;
     [SerializeField]
+    [Range(0, 1f)]
+    private float scaleSpawnObjectFactor = 1f;
+    [SerializeField]
     private int tilesCount = 0;
     [SerializeField]
     private Material material;
@@ -30,9 +33,11 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
     private Vector3[] vertices;
     [SerializeField]
     private int[] triangles;
+
     private void Start()
     {
         Initialize();
+        GenerateHexagonGridData();
         //GenerateHexagonGridMesh();
         //GenerateHexagonTilesMesh();
         GenerateHexagonTiles();
@@ -114,7 +119,7 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
         GenerateSquareMesh();
     }
 
-    private void GenerateHexagonTiles()
+    private void GenerateHexagonGridData()
     {
         foreach (PlanetOctahedronHexagonGridFace2 face in planetOctahedronHexagonGridFaces)
             if (face != null)
@@ -122,8 +127,11 @@ public class PlanetOctahedronHexagonGrid2 : MonoBehaviour
                 CreateHexagonTilesVertices(face);
                 AddHexagonTile(face.hexagonTiles);
             }
+    }
+    private void GenerateHexagonTiles()
+    {
 
-        TileGrid gridMesh = new(hexagonTiles, material);
+        TileGrid gridMesh = new(hexagonTiles, material, transform,sideSize * scaleSpawnObjectFactor);
 
         GameObject gameObject = gridMesh.GenerateGrid();
         gameObject.transform.parent = transform;
